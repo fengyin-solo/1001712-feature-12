@@ -11,6 +11,7 @@ const Plan = () => import('@/views/plan/index.vue')
 const Spotcheck = () => import('@/views/spotcheck/index.vue')
 const Lubricate = () => import('@/views/lubricate/index.vue')
 const Inspect = () => import('@/views/inspect/index.vue')
+const InspectWorkbench = () => import('@/views/inspect-workbench/index.vue')
 const Report = () => import('@/views/report/index.vue')
 const Hazard = () => import('@/views/hazard/index.vue')
 const Rectify = () => import('@/views/rectify/index.vue')
@@ -24,6 +25,7 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/', name: 'dashboard', component: Dashboard },
+    { path: '/inspect-workbench', name: 'inspect-workbench', component: InspectWorkbench },
     { path: '/boiler', name: 'boiler', component: Boiler },
     { path: '/vessel', name: 'vessel', component: Vessel },
     { path: '/pressurepipe', name: 'pressurepipe', component: Pressurepipe },

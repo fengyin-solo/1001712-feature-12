@@ -31,18 +31,32 @@ class Store:
         modules: list[dict[str, object]] = []
         for name in self.module_names():
             rows = self.rows(name)
-            modules.append({
+            item: dict[str, object] = {
                 "name": name,
                 "created": len(rows),
                 "pending": sum(1 for row in rows if row.get("pending")),
                 "abnormal": sum(1 for row in rows if row.get("abnormal")),
-            })
+            }
+            # 定期检验额外给归属口径：待检验与待指派都从同一份归属实时计算，
+            # 与检验员工作台、检验列表共用 InspectService.ownership_summary。
+            if name == "inspect":
+                from app.services.inspect import inspect_service
+
+                summary = inspect_service.ownership_summary()
+                item["pending_inspect"] = summary["pending"]
+                item["unassigned"] = summary["unassigned"]
+                item["ownership"] = summary["organizations"]
+            modules.append(item)
         cards = [
             {"label": "业务模块", "value": len(modules)},
             {"label": "今日新增", "value": sum(int(item["created"]) for item in modules)},
             {"label": "待处理", "value": sum(int(item["pending"]) for item in modules)},
             {"label": "异常量", "value": sum(int(item["abnormal"]) for item in modules)},
         ]
+        inspect_item = next((item for item in modules if item["name"] == "inspect"), None)
+        if inspect_item is not None:
+            cards.append({"label": "待检验", "value": int(inspect_item["pending_inspect"])})
+            cards.append({"label": "待指派", "value": int(inspect_item["unassigned"])})
         return {"cards": cards, "modules": modules}
 
 
