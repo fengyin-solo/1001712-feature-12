@@ -28,6 +28,9 @@ class Store:
         return None
 
     def overview(self) -> dict[str, object]:
+        # 延迟导入：inspect 服务反向依赖 store，模块顶层导入会形成环
+        from app.services.inspect import inspect_service
+
         modules: list[dict[str, object]] = []
         for name in self.module_names():
             rows = self.rows(name)
@@ -43,7 +46,14 @@ class Store:
             {"label": "待处理", "value": sum(int(item["pending"]) for item in modules)},
             {"label": "异常量", "value": sum(int(item["abnormal"]) for item in modules)},
         ]
-        return {"cards": cards, "modules": modules}
+        # 定期检验待检验数按归属机构拆分；与检验员工作台共用 inspect 服务的同一口径
+        inspect_ownership = inspect_service.ownership_summary()
+        cards.append({
+            "label": "待检验任务",
+            "value": int(inspect_ownership["pending"]),
+            "unassigned": int(inspect_ownership["unassigned"]),
+        })
+        return {"cards": cards, "modules": modules, "inspect_ownership": inspect_ownership}
 
 
 store = Store()
